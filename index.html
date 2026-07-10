@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Prevent viewport scaling and zooming on mobile browsers -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Mission Radiance | St. Joseph's School</title>
+  <meta name="description" content="An interactive space journey game from St. Joseph's School's Radiance e-magazine. Guide your rocket from Earth to the Moon while collecting the 7 school values.">
+
+  <!-- Premium Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Portrait lock notification for mobile landscape mode -->
+  <div id="portrait-lock" class="screen-overlay">
+    <div class="lock-content">
+      <div class="lock-icon">🔄</div>
+      <h2>Please Rotate Your Device</h2>
+      <p>Mission Radiance is designed to be played in portrait orientation.</p>
+    </div>
+  </div>
+
+  <div id="game-container">
+    <!-- Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- UI Overlay Screens -->
+
+    <!-- 1. Splash Screen -->
+    <div id="splash-screen" class="screen-overlay active">
+      <div class="glass-panel">
+        <div class="school-header">St. Joseph's School</div>
+        <h1 class="game-title">MISSION<br><span class="gold-text animate-pulse-gold">RADIANCE</span></h1>
+        <p class="game-subtitle">A Cinematic Journey of Core Values</p>
+        
+        <div class="game-intro-box">
+          <p>Steer the Radiance Rocket to the Moon. Collect the <strong>7 School Values</strong> while avoiding asteroids and debris.</p>
+          <div class="control-help">
+            <div class="control-item">
+              <span class="control-key">Left Touch</span> / <span class="control-key">A</span> / <span class="control-key">←</span>
+              <span>Move Left</span>
+            </div>
+            <div class="control-item">
+              <span class="control-key">Right Touch</span> / <span class="control-key">D</span> / <span class="control-key">→</span>
+              <span>Move Right</span>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-begin" class="btn-gold">Begin Journey</button>
+      </div>
+    </div>
+
+    <!-- 2. Fullscreen Prompt Screen -->
+    <div id="fullscreen-prompt" class="screen-overlay">
+      <div class="glass-panel text-center">
+        <div class="star-crest">✦</div>
+        <h2>Cinematic Experience</h2>
+        <p class="prompt-text">We recommend playing in Fullscreen mode for the best visual and interactive experience.</p>
+        <div class="button-group">
+          <button id="btn-fullscreen" class="btn-gold">Go Fullscreen</button>
+          <button id="btn-skip-fullscreen" class="btn-outline">Skip</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Minimal Mobile HUD -->
+    <div id="game-hud" class="hud-overlay">
+      <div class="hud-header">
+        <!-- Lives Indicator (3 Hearts) -->
+        <div class="hud-item hearts-container" id="hud-hearts">
+          <span class="heart active">♥</span>
+          <span class="heart active">♥</span>
+          <span class="heart active">♥</span>
+        </div>
+
+        <!-- Badges Count -->
+        <div class="hud-item badges-tracker">
+          <div class="crest-icon">✦</div>
+          <span id="badges-collected">0</span><span class="gold-text">/7</span>
+        </div>
+
+        <!-- Mute/Sound Toggle -->
+        <button id="btn-mute" class="hud-item icon-btn" aria-label="Toggle Sound">
+          <svg id="sound-on-icon" viewBox="0 0 24 24" width="22" height="22">
+            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.01,19.86 21,16.28 21,12C21,7.72 18.01,4.14 14,3.23M16.5,12A4.5,4.5 0 0,0 14,7.97V16C15.48,15.32 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+          </svg>
+          <svg id="sound-off-icon" viewBox="0 0 24 24" width="22" height="22" class="hidden">
+            <path fill="currentColor" d="M12,4L7,9H3V15H7L12,20V4M16.5,12A4.5,4.5 0 0,0 14,7.97V10.18L16.45,12.63C16.48,12.42 16.5,12.21 16.5,12M19,12C19,12.94 18.8,13.82 18.46,14.63L19.97,16.14C20.63,14.91 21,13.5 21,12C21,7.72 18.01,4.14 14,3.23V5.29C16.89,6.15 19,8.83 19,12M4.27,3L3,4.27L7.73,9H3V15H7L12,20V13.27L16.25,17.5C15.58,18 14.82,18.4 14,18.6V20.66C15.38,20.44 16.63,19.79 17.66,18.9L20.73,21.97L22,20.72L4.27,3Z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Compact Progress Bar (Earth to Moon) -->
+      <div class="hud-progress-container">
+        <div class="progress-labels">
+          <span>Earth</span>
+          <span>Moon</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+          <div id="progress-rocket-head" class="progress-rocket-head" style="left: 0%;">🚀</div>
+        </div>
+      </div>
+
+      <!-- Hyper Boost Energy Meter -->
+      <div class="boost-meter">
+        <div class="boost-header">⚡ Hyper Boost</div>
+        <div class="boost-bar-bg">
+          <div id="boost-bar-fill" class="boost-bar-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Boost Control Button -->
+    <button id="btn-boost" class="boost-button" aria-label="Hold to activate Hyper Boost">⚡</button>
+
+    <!-- 4. Dynamic Badge Notification Popups (Toasts) -->
+    <div id="badge-toast" class="badge-toast-container">
+      <!-- Generated dynamically in game.js -->
+    </div>
+
+    <!-- 4b. Elegant Value Collection Modal (1.6s pause) -->
+    <div id="badge-modal" class="screen-overlay">
+      <div class="glass-panel badge-modal-content">
+        <div id="badge-modal-icon" class="badge-modal-icon">📖</div>
+        <h2 id="badge-modal-title" class="badge-modal-title gold-text">Knowledge</h2>
+        <div class="divider"></div>
+        <p id="badge-modal-meaning" class="badge-modal-meaning">"Learning lights the path."</p>
+      </div>
+    </div>
+
+    <!-- 5. Mission Interrupted Overlay -->
+    <div id="interrupted-screen" class="screen-overlay">
+      <div class="glass-panel text-center">
+        <div class="danger-icon animate-pulse-gold">⚠️</div>
+        <h2 class="danger-text">MISSION INTERRUPTED</h2>
+        <p class="interrupted-text">The rocket has sustained critical damage from space debris.</p>
+        <p class="values-retained">Collected values are secure.</p>
+        <button id="btn-continue" class="btn-gold">Repair &amp; Continue</button>
+      </div>
+    </div>
+
+    <!-- 6. Mission Complete (Victory) Screen -->
+    <div id="victory-screen" class="screen-overlay">
+      <div class="glass-panel victory-panel text-center">
+
+        <!-- Trophy / Crest -->
+        <div class="crest-gold-large victory-trophy">🏆</div>
+
+        <!-- Title -->
+        <h1 class="victory-title">MISSION COMPLETE</h1>
+        <div class="divider"></div>
+
+        <div class="victory-copy">
+          <div class="victory-phase victory-phase-1 active">
+            <p class="victory-commander">Congratulations, Commander!</p>
+            <p class="victory-desc">
+              You have successfully guided the Radiance Mission<br>from Earth to the Moon.
+            </p>
+            <p class="victory-epilogue">
+              Every great journey begins with a dream,<br>
+              but it is dedication, learning, and leadership<br>
+              that make the destination meaningful.
+            </p>
+            <div class="victory-motto">
+              <span class="motto-line">Learning Today.</span>
+              <span class="motto-line">Leading Tomorrow.</span>
+            </div>
+          </div>
+
+          <div class="victory-phase victory-phase-2">
+            <p class="victory-epilogue">Thank you for being a part of</p>
+            <p class="victory-closing-title">RADIANCE<br>2026–27</p>
+            <p class="victory-desc victory-desc--small">The First Edition</p>
+            <p class="victory-epilogue">
+              This journey may have reached the Moon,<br>
+              but the story of Radiance has only just begun.
+            </p>
+            <p class="victory-desc">
+              We look forward to welcoming you<br>again in the next edition.
+            </p>
+            <p class="victory-epilogue">Until then...</p>
+            <p class="victory-desc">
+              Keep Learning.<br>
+              Keep Leading.<br>
+              Keep Shining.
+            </p>
+          </div>
+        </div>
+
+        <!-- Mini animated waving flag canvas -->
+        <canvas id="victory-flag-canvas" width="160" height="80" aria-label="Waving St. Joseph's School flag"></canvas>
+
+        <!-- Action Buttons -->
+        <div class="button-group victory-buttons victory-buttons--hidden">
+          <button id="btn-replay" class="btn-gold">🚀&nbsp; Play Again</button>
+          <button id="btn-magazine" class="btn-outline">📖&nbsp; Return to Radiance Magazine</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /#game-container -->
+
+  <script src="game.js"></script>
+  <script>
+    // Register Service Worker for Offline PWA Support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered.', reg.scope))
+          .catch(err => console.warn('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
